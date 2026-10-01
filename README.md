@@ -40,6 +40,7 @@
 ## What This Does
 
 <!-- Three or four sentences: what a user asks for, and what they get back. -->
+''
 
 
 
@@ -59,14 +60,14 @@
 
 ### `search_listings`
 
-- **What it does:**
-- **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Searches for items according to criteria given 
+- **Inputs:**  description, size, max_size
+- **Returns:** list of matching items in dictionary format
+- **When it has nothing:** empty list
 
 ### `suggest_outfit`
 
-- **What it does:**
+- **What it does:** suggest outfit 
 - **Inputs:**
 - **Returns:**
 - **When it has nothing:**
@@ -93,7 +94,7 @@
      The grader checks your code against what you claim here, so the file and
      function have to be real. -->
 
-**Branch rule:**
+**Branch rule:** "If search_listings returns an empty list, put a message in the session and stop. Otherwise, take the first result and go to suggest_outfit."
 
 **Where it lives:** `agent.py::run_agent`
 

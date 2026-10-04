@@ -60,24 +60,24 @@
 
 ### `search_listings`
 
-- **What it does:** Searches for items according to criteria given 
-- **Inputs:**  description, size, max_size
-- **Returns:** list of matching items in dictionary format
-- **When it has nothing:** empty list
+- **What it does:** Searches the listings data for items matching a description, and optionally a size and a price ceiling. Size matches by whole token, case-insensitively: M matches S/M and M/L but not US 9 or XL.
+- **Inputs:** `description` (str), `size` (str or None), `max_price` (float or None, inclusive)
+- **Returns:** A list of listing dicts, best keyword match first, at most `config.SEARCH_RESULT_LIMIT` long. Each dict has `id`, `title`, `description`, `category`, `style_tags` (list), `size`, `condition`, `price` (float), `colors` (list), `brand` (str or None) and `platform`.
+- **When it has nothing:** Returns an empty list `[]`, not `None` and not an exception. The loop branches on this.
 
 ### `suggest_outfit`
 
-- **What it does:** suggest outfit 
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Given a thrifted item and the user's wardrobe, asks the model to suggest one or two outfits.
+- **Inputs:** `new_item` (dict, a listing), `wardrobe` (dict with an `items` list, possibly empty)
+- **Returns:** A non-empty `str` of one or two outfit suggestions, each naming wardrobe pieces the user already owns.
+- **When it has nothing:** If `wardrobe["items"]` is empty, returns a non-empty `str` of general styling advice for `new_item`. Never `""`, never raises.
 
 ### `create_fit_card`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Asks the model to write a short caption someone would actually post about the find.
+- **Inputs:** `outfit` (str, from `suggest_outfit`), `new_item` (dict, a listing)
+- **Returns:** A `str` caption of two to four sentences that mentions the item, its price and its platform.
+- **When it has nothing:** If `outfit` is empty or whitespace, returns a descriptive message `str` such as "No outfit to caption yet" instead of raising.
 
 ---
 

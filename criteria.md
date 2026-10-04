@@ -25,9 +25,8 @@ Given a query that matches at least one listing, the agent completes all three
 tool calls and returns a fit card — in at least 4 of 5 tries.
 
 **Why this target:**
-<!-- Why 4 of 5 and not 5 of 5? Something about your search, probably —
-     "my search is a plain keyword match and some phrasings will miss" is a
-     real answer. -->
+
+I picked 4 of 5 because search is a plain keyword match. A query like "find t-shirt" won't match a listing titled "Baby Tee", so some phrasings will miss even though the item exists. My test queries are phrased the way a user would type them, not copied from the data.
 
 ---
 
@@ -37,64 +36,47 @@ Given a query that matches no listings, the agent stops before calling
 `suggest_outfit` and returns a message naming what to change — 5 of 5 tries.
 
 **Why this target:**
-<!-- Why is 5 of 5 reasonable here when criterion 1 isn't? What's different
-     about this path? -->
+
+I picked 5 of 5 because this path never calls the model. When search returns an empty list, the loop stops at a plain check, so all five tries give the same result. My test query is "designer ballgown size XXS under $5", where no word matches any listing.
 
 ---
 
 ## 3. Something about state
 
-<!-- YOU WRITE THIS ONE.
-
-     How would you know that the item your search found is the same item the
-     next tool received? Name something countable or observable.
-
-     This is the criterion people find hardest, because state failure doesn't
-     look like state failure — it looks like a tool problem. Something that
-     compares session["selected_item"] against what actually reached
-     suggest_outfit is the shape you're after. -->
-
-
+In 5 of 5 tries, the id of session["selected_item"] matches the id of the new_item that suggest_outfit received, as shown in the trace.
 
 **Why this target:**
 
+I picked 5 of 5 because this is just a value passed from one step to the next, with no model involved, so nothing varies.
 
 
 ---
 
 ## 4. Something about the fit card
 
-<!-- YOU WRITE THIS ONE.
+One try is one set of three runs on the same item. A try passes only if all of these hold:
 
-     The fit card calls a model, so the same input can produce different words
-     each time. That's not a bug — it's the nature of the tool. So what would
-     make it acceptable?
+- every caption contains the item's price and platform name;
+- every caption is 2 to 4 sentences;
+- the three captions are not all word-for-word identical.
 
-     Think about what you'd actually be unhappy to see. A caption that never
-     mentions the price? Two different items producing the same opening
-     sentence? A card longer than a caption anyone would post? Any of those can
-     be turned into a number. -->
+The price counts if the number appears (e.g. 18.0); the platform counts if its name appears, ignoring capitalization (e.g. depop).
 
-
+Target: 5 of 5 tries pass.
 
 **Why this target:**
 
-
+I picked 5 of 5 because the checks don't depend on exact wording. They only look for the price number, the platform name and a sentence count, so the model's random variation shouldn't cause a miss. My prompt tells the model to include the price and platform.
 
 ---
 
 ## 5. Your choice
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. Speed, the empty
-     wardrobe path, what happens when the model can't be reached, whether the
-     search respects a price ceiling — anything, as long as it names a number
-     or an observable outcome. -->
-
-
+With get_empty_wardrobe(), the agent completes all three tools and returns a non-empty fit card, with no exception raised, in 4 of 5 tries.
 
 **Why this target:**
+
+I picked 4 of 5 because the empty-wardrobe branch itself is a plain check that I control, so it should behave the same every time. But this path still makes two model calls, one in `suggest_outfit` and one in `create_fit_card`, and a model can fail or return something unexpected. One miss in five is a fair allowance for that.
 
 
 

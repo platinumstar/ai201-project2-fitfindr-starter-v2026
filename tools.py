@@ -193,5 +193,15 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
     Test it from a terminal before you move on:
         python -c "from tools import create_fit_card; from utils.data_loader import load_listings; print(create_fit_card('jeans and white sneakers', load_listings()[0]))"
     """
-    # TODO: replace this with your implementation
-    return ""
+
+    if not outfit.strip():
+        return "No outfit suggestion was provided, so no caption can be created."
+    
+    item_text = f"{new_item['title']} ({new_item['category']}, {new_item['size']}, colors: {', '.join(new_item['colors'])})"
+    prompt = (
+        f"Write a 2-4 sentence social media caption for someone posting about their new thrift find: {item_text}.\n"
+        f"Include the outfit suggestion: {outfit}\n"
+        "Mention the item, its price, and the platform once each. Make it sound like a real post."
+    )
+    reply = generate(prompt)
+    return reply or "No caption came back. Try again."

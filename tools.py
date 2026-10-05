@@ -135,8 +135,26 @@ def suggest_outfit(new_item: dict, wardrobe: dict) -> str:
     Test it from a terminal before you move on:
         python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
     """
-    # TODO: replace this with your implementation
-    return ""
+
+    item_text = f"{new_item['title']} ({new_item['category']}, {new_item['size']}, colors: {', '.join(new_item['colors'])})"
+    items = wardrobe["items"]
+    if not items:
+        prompt = (
+            f"A shopper is thinking of buying: {item_text}\n"
+            "They haven't saved a closet. Suggest one or two ways to style "
+            "this item with common wardrobe basics. Keep it short."
+        )               
+    else:
+        lines = [f"- {w['name']} ({', '.join(w['colors'])})" for w in items]
+        closet_text = "\n".join(lines)
+        prompt = (
+            f"A shopper is thinking of buying: {item_text}\n"
+            f"Their closet has:\n{closet_text}\n"
+            "Suggest one or two outfits built around the new item, naming "
+            "specific pieces from their closet. Keep it short."
+        )
+    reply = generate(prompt)
+    return reply or "No outfit suggestion came back. Try again."
 
 
 # ── Tool 3: create_fit_card ───────────────────────────────────────────────────

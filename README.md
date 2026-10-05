@@ -47,7 +47,10 @@
 ---
 
 ## Tool Inventory
-
+"""
+size='US 9' returns nothing, and One Size returns nothing. A size with a space never equals a single token. If a user types "size US 9", it won't match the shoe. You can leave it, but then say so in your README, or handle multi-word sizes by splitting wanted too and requiring all its pieces.
+One Size items never match M. That follows your whole-token rule, which is fine. Just be aware of it.
+"""
 <!-- Four lines per tool. This is worth 2 points and it's the single most
      common place students lose them.
 
@@ -108,7 +111,34 @@
 
 <!-- Two things go here.
 
-     1. One FULL query and its output, pasted as text.
+ % python -c "from tools import search_listings; r = search_listings('Y2K Baby Tee in white color'); print([i['title'] for i in r])"
+['Y2K Baby Tee — Butterfly Print', 'Low-Rise Cargo Pants — Khaki', 'Mesh Long-Sleeve Top — Black', 'Platform Sneakers — White Chunky Sole', '90s Track Jacket — Navy/White Stripe', 'Graphic Tee — 2003 Tour Bootleg Style', 'Platform Mary Janes — Black Patent', 'Vintage Linen Blazer — Cream', 'Crochet Halter Top — Cream', 'Biker Shorts — Black, Shiny']
+
+% python -c "from tools import search_listings; r = search_listings('graphic tee', max_price=30); print([(i['title'], i['price']) for i in r])"
+[('Y2K Baby Tee — Butterfly Print', 18.0), ('Graphic Tee — 2003 Tour Bootleg Style', 24.0), ('Mesh Long-Sleeve Top — Black', 15.0), ('Vintage Band Tee — Faded Grey', 19.0), ('Low-Rise Cargo Pants — Khaki', 27.0), ('Vintage Graphic Hoodie — Faded Black', 26.0)]
+
+ % python -c "from tools import search_listings; r = search_listings('Y2K Baby Tee in white color'); print([i['title'] for i in r])"
+['Y2K Baby Tee — Butterfly Print', 'Low-Rise Cargo Pants — Khaki', 'Mesh Long-Sleeve Top — Black', 'Platform Sneakers — White Chunky Sole', '90s Track Jacket — Navy/White Stripe', 'Graphic Tee — 2003 Tour Bootleg Style', 'Platform Mary Janes — Black Patent', 'Vintage Linen Blazer — Cream', 'Crochet Halter Top — Cream', 'Biker Shorts — Black, Shiny']
+(.venv) ronju@Ronjus-Mac-mini ai201-project2-fitfindr-starter-v2026  % python -c "from tools import search_listings; r = search_listings('graphic tee', max_price=30); print([(i['title'], i['price']) for i in r])"
+[('Y2K Baby Tee — Butterfly Print', 18.0), ('Graphic Tee — 2003 Tour Bootleg Style', 24.0), ('Mesh Long-Sleeve Top — Black', 15.0), ('Vintage Band Tee — Faded Grey', 19.0), ('Low-Rise Cargo Pants — Khaki', 27.0), ('Vintage Graphic Hoodie — Faded Black', 26.0)]
+(.venv) ronju@Ronjus-Mac-mini ai201-project2-fitfindr-starter-v2026  % python -c "from tools import search_listings; print(search_listings('designer ballgown', size='XXS', max_price=5))"
+[]
+
+
+% python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
+
+**Outfit 1: Casual & Sporty**
+Pair the Vintage Levi's 501s with the white ribbed tank top, layered under the oversized grey crewneck sweatshirt. Finish the look with chunky white sneakers and the black crossbody bag. 
+
+**Outfit 2: Edgy Streetwear**
+Style the jeans with the black cropped zip hoodie and the vintage black denim jacket on top. Accessorize with the brown leather belt and black combat boots.
+
+ % python -c "from tools import suggest_outfit; from utils.data_loader import get_empty_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_empty_wardrobe()))"
+Here are two easy ways to style vintage Levi’s 501s using wardrobe basics:
+
+1. **Classic Casual:** Pair them with a crisp white t-shirt, a leather belt, and white sneakers for an effortless, timeless look.
+2. **Elevated Everyday:** Tuck in an oversized black turtleneck or a neutral crewneck sweater and add loafers or ankle boots for a slightly sharper vibe.
+
      2. Your three per-tool terminal tests — the command and what it printed. -->
 
 **One full query**

@@ -13,12 +13,25 @@ Build and test your three tools in `tools.py` first. Then come here.
     python agent.py          runs both example paths below
 """
 
+from requests import session
+
 import config
 import trace
+import re
 from tools import search_listings, suggest_outfit, create_fit_card
 from generate import ModelUnavailable
 
+SIZE_RE = re.compile(
+    r"\bsize\s+"
+    r"(XXXL|XXL|XXS|XL|XS|S|M|L|\d{1,3}(?:\.5)?)\b",
+    re.IGNORECASE,
+)
 
+PRICE_RE = re.compile(
+    r"\b(?:under|below|up\s*to|max(?:imum)?)\s*"
+    r"\$\s*(\d+(?:\.\d{1,2})?)\b",
+    re.IGNORECASE,
+)
 # ── session state ─────────────────────────────────────────────────────────────
 
 def new_session(query: str, wardrobe: dict) -> dict:
@@ -106,10 +119,47 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         than a stack trace. The import is already at the top of this file.
     """
     session = new_session(query, wardrobe)
+    count = 0
+    size_match = SIZE_RE.search(query)
+    price_match = PRICE_RE.search(query)
 
-    # TODO: delete these two lines and build the loop.
-    session["error"] = "The planning loop isn't built yet — see the TODO in agent.py."
+    size = size_match.group(1) if size_match else None
+    max_price = float(price_match.group(1)) if price_match else None
+
+    # Remove matched size and price phrases, then clean leftover punctuation.
+    description = query
+    matches = [m for m in (size_match, price_match) if m]
+
+    for match in sorted(matches, key=lambda m: m.start(), reverse=True):
+        description = description[:match.start()] + description[match.end():]
+
+    description = re.sub(r"\s*,\s*", " ", description)
+    description = re.sub(r"\s+", " ", description).strip(" ,.-")
+    session["parsed"] = {
+        "description": description,
+        "size": size,
+        "max_price": max_price,
+    }
+    
+    count += 1
+    trace.check_iterations(count)
+    session["search_results"] = search_listings( session["parsed"]["description"], session["parsed"]["size"], session["parsed"]["max_price"], ) 
+    if not session["search_results"]:
+        session["error"] = f"Your query did not return any results. Try changing your description{session['parsed']['description']}, size{session["parsed"]["size"]}, or price filters{session["parsed"]["max_price"]}." #Hint: session["parsed"] has the actual size and max_price values, so your message can show the user what they searched with.
+        return session
+        
+    session["selected_item"] = session["search_results"][0]
+    
+    count += 1
+    trace.check_iterations(count)
+    session["outfit_suggestion"] = suggest_outfit(session["selected_item"], session["wardrobe"])
+
+    count += 1
+    trace.check_iterations(count)
+    session["fit_card"] = create_fit_card(session["outfit_suggestion"], session["selected_item"])
+
     return session
+
 
 
 # ── running it directly ───────────────────────────────────────────────────────

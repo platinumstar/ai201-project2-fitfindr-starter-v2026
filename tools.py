@@ -20,10 +20,12 @@ That last line is what your loop branches on. "Returns a list" earns nothing —
 the description has to say what is *in* the list.
 """
 
-import config  # noqa: F401 — you'll use this in search_listings
+import config
+import re
 from generate import generate
 from utils.data_loader import load_listings
 
+STOPWORDS = {"a", "an", "the", "in", "of", "and", "for", "with", "color"}
 
 # ── Tool 1: search_listings ───────────────────────────────────────────────────
 
@@ -32,6 +34,7 @@ def search_listings(
     size: str | None = None,
     max_price: float | None = None,
 ) -> list[dict]:
+    # filtering and scoring will go below this
     """
     Search the listings data for items matching a description, and optionally a
     size and a price ceiling.
@@ -78,8 +81,28 @@ def search_listings(
     Test it from a terminal before you move on:
         python -c "from tools import search_listings; print(search_listings('graphic tee', max_price=30))"
     """
-    # TODO: Find me   "make it lowercase and Y2K Baby Tee in white color"
-    return []
+    listings = load_listings()     
+    # only filter when there is a price
+    if max_price is not None:
+        listings = [item for item in listings if item["price"] <= max_price]
+    # size: whole-token match, so M matches S/M but not US 9.
+    if size is not None:
+        wanted = size.lower().strip()
+        listings = [
+            item for item in listings
+            if wanted in re.split(r"[^a-z0-9.]+", item["size"].lower())
+        ]
+    scored = []
+    query_words = {w for w in re.split(r"[^a-z0-9]+", description.lower()) if w and w not in STOPWORDS}
+    for item in listings:
+        text = " ".join([item["title"], item["description"],
+                 " ".join(item["style_tags"]), " ".join(item["colors"])]).lower()
+        item_words = set(re.split(r"[^a-z0-9]+", text))
+        score = len(query_words & item_words)
+        if score > 0:
+            scored.append((score, item))
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    return [item for score, item in scored[:config.SEARCH_RESULT_LIMIT]]
 
 
 # ── Tool 2: suggest_outfit ────────────────────────────────────────────────────

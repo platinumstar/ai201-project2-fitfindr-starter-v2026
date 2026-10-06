@@ -136,14 +136,19 @@ def suggest_outfit(new_item: dict, wardrobe: dict) -> str:
         python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
     """
 
-    item_text = f"{new_item['title']} ({new_item['category']}, {new_item['size']}, colors: {', '.join(new_item['colors'])})"
+    item_text = (
+        f"{new_item['title']} ({new_item['category']}, size {new_item['size']}, "
+        f"colors: {', '.join(new_item['colors'])}), "
+        f"${new_item['price']:.0f} on {new_item['platform']}"
+    )
+
     items = wardrobe["items"]
     if not items:
         prompt = (
             f"A shopper is thinking of buying: {item_text}\n"
             "They haven't saved a closet. Suggest one or two ways to style "
             "this item with common wardrobe basics. Keep it short."
-        )               
+        )
     else:
         lines = [f"- {w['name']} ({', '.join(w['colors'])})" for w in items]
         closet_text = "\n".join(lines)
@@ -197,11 +202,17 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
     if not outfit.strip():
         return "No outfit suggestion was provided, so no caption can be created."
     
-    item_text = f"{new_item['title']} ({new_item['category']}, {new_item['size']}, colors: {', '.join(new_item['colors'])})"
+    item_text = (
+        f"{new_item['title']} ({new_item['category']}, size {new_item['size']}, "
+        f"colors: {', '.join(new_item['colors'])}), "
+        f"${new_item['price']:.0f} on {new_item['platform']}"
+    )
     prompt = (
-        f"Write a 2-4 sentence social media caption for someone posting about their new thrift find: {item_text}.\n"
-        f"Include the outfit suggestion: {outfit}\n"
-        "Mention the item, its price, and the platform once each. Make it sound like a real post."
+        f"Write a social media caption for someone posting about their new thrift find: {item_text}.\n"
+        f"Outfit idea (summarize it in one phrase, do not copy it): {outfit}\n"
+        "Rules: exactly 2 to 4 sentences. Mention the price and the platform "
+        "exactly as given above, once each. Sound like a real post, not a "
+        "product description."
     )
     reply = generate(prompt)
     return reply or "No caption came back. Try again."

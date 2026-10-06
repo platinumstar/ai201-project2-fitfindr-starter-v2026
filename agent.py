@@ -13,8 +13,6 @@ Build and test your three tools in `tools.py` first. Then come here.
     python agent.py          runs both example paths below
 """
 
-from requests import session
-
 import config
 import trace
 import re
@@ -145,9 +143,31 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     trace.check_iterations(count)
     session["search_results"] = search_listings( session["parsed"]["description"], session["parsed"]["size"], session["parsed"]["max_price"], ) 
     if not session["search_results"]:
-        session["error"] = f"Your query did not return any results. Try changing your description{session['parsed']['description']}, size{session["parsed"]["size"]}, or price filters{session["parsed"]["max_price"]}." #Hint: session["parsed"] has the actual size and max_price values, so your message can show the user what they searched with.
+        parsed = session["parsed"]
+        description = parsed["description"]
+        max_price = parsed["max_price"]
+        size = parsed["size"]
+        tips = []
+
+        if max_price is not None:
+            tips.append(
+                f"raise your price limit "
+                f"(you searched under ${max_price:.0f})"
+            )
+
+        if size is not None:
+            tips.append(
+                f"try a different size "
+                f"(you searched size {size})"
+            )
+        # This suggestion is always useful when no listings match.
+        tips.append("use simpler or different keywords")
+        session["error"] = (
+            f'No listings matched "{description}". You could '
+            f'{", or ".join(tips)}.'
+        )
         return session
-        
+
     session["selected_item"] = session["search_results"][0]
     
     count += 1

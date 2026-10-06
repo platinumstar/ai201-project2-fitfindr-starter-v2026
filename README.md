@@ -101,68 +101,64 @@ One Size items never match M. That follows your whole-token rule, which is fine.
 
 **Where it lives:** `agent.py::run_agent`
 
-**How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
+**How the query is parsed:** used regular expressions (SIZE_RE, PRICE_RE) to pull out the size and price, then removed those phrases to leave the description. 
 
 **What moves through the session:** <!-- which fields, in what order -->
-
+        "description",
+        "size":,
+        "max_price"
 ---
 
 ## Sample Run
 
-<!-- Two things go here.
-
- % python -c "from tools import search_listings; r = search_listings('Y2K Baby Tee in white color'); print([i['title'] for i in r])"
-['Y2K Baby Tee — Butterfly Print', 'Low-Rise Cargo Pants — Khaki', 'Mesh Long-Sleeve Top — Black', 'Platform Sneakers — White Chunky Sole', '90s Track Jacket — Navy/White Stripe', 'Graphic Tee — 2003 Tour Bootleg Style', 'Platform Mary Janes — Black Patent', 'Vintage Linen Blazer — Cream', 'Crochet Halter Top — Cream', 'Biker Shorts — Black, Shiny']
-
-% python -c "from tools import search_listings; r = search_listings('graphic tee', max_price=30); print([(i['title'], i['price']) for i in r])"
-[('Y2K Baby Tee — Butterfly Print', 18.0), ('Graphic Tee — 2003 Tour Bootleg Style', 24.0), ('Mesh Long-Sleeve Top — Black', 15.0), ('Vintage Band Tee — Faded Grey', 19.0), ('Low-Rise Cargo Pants — Khaki', 27.0), ('Vintage Graphic Hoodie — Faded Black', 26.0)]
-
- % python -c "from tools import search_listings; r = search_listings('Y2K Baby Tee in white color'); print([i['title'] for i in r])"
-['Y2K Baby Tee — Butterfly Print', 'Low-Rise Cargo Pants — Khaki', 'Mesh Long-Sleeve Top — Black', 'Platform Sneakers — White Chunky Sole', '90s Track Jacket — Navy/White Stripe', 'Graphic Tee — 2003 Tour Bootleg Style', 'Platform Mary Janes — Black Patent', 'Vintage Linen Blazer — Cream', 'Crochet Halter Top — Cream', 'Biker Shorts — Black, Shiny']
-(.venv) ronju@Ronjus-Mac-mini ai201-project2-fitfindr-starter-v2026  % python -c "from tools import search_listings; r = search_listings('graphic tee', max_price=30); print([(i['title'], i['price']) for i in r])"
-[('Y2K Baby Tee — Butterfly Print', 18.0), ('Graphic Tee — 2003 Tour Bootleg Style', 24.0), ('Mesh Long-Sleeve Top — Black', 15.0), ('Vintage Band Tee — Faded Grey', 19.0), ('Low-Rise Cargo Pants — Khaki', 27.0), ('Vintage Graphic Hoodie — Faded Black', 26.0)]
-(.venv) ronju@Ronjus-Mac-mini ai201-project2-fitfindr-starter-v2026  % python -c "from tools import search_listings; print(search_listings('designer ballgown', size='XXS', max_price=5))"
-[]
-
-
-% python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
-
-**Outfit 1: Casual & Sporty**
-Pair the Vintage Levi's 501s with the white ribbed tank top, layered under the oversized grey crewneck sweatshirt. Finish the look with chunky white sneakers and the black crossbody bag. 
-
-**Outfit 2: Edgy Streetwear**
-Style the jeans with the black cropped zip hoodie and the vintage black denim jacket on top. Accessorize with the brown leather belt and black combat boots.
-
- % python -c "from tools import suggest_outfit; from utils.data_loader import get_empty_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_empty_wardrobe()))"
-Here are two easy ways to style vintage Levi’s 501s using wardrobe basics:
-
-1. **Classic Casual:** Pair them with a crisp white t-shirt, a leather belt, and white sneakers for an effortless, timeless look.
-2. **Elevated Everyday:** Tuck in an oversized black turtleneck or a neutral crewneck sweater and add loafers or ankle boots for a slightly sharper vibe.
-
-     2. Your three per-tool terminal tests — the command and what it printed. -->
-
 **One full query**
 
 ```
-$ python app.py ask '...'
-
+$ python app.py ask 'vintage graphic tee under $30'
+Found:    Y2K Baby Tee — Butterfly Print — $18.0 on depop
+  Outfit:   **Outfit 1 (Casual Y2K):** Pair the butterfly baby tee with the **baggy straight-leg jeans**, **brown leather belt**, and **chunky white sneakers**. Throw on the **black cropped zip hoodie** for a layered look.
+**Outfit 2 (Contrast Mix):** Style the pink/purple butterfly tee with the **wide-leg khaki trousers** and **chunky white sneakers**, topped with the **vintage black denim jacket** to ground the pastel tones.
+  Fit card: Just scored this absolute dream of a Y2K baby tee on Depop for only $18! I can't wait to style the butterfly print with some baggy denim and a cute zip-up hoodie for the ultimate throwback fit.
+2 model calls this session, 367 prompt + 148 output tokens
 ```
 
 **The three tools, tested one at a time**
 
+`search_listings`, a query that matches, then one that does not:
+
 ```
 $ python -c "from tools import search_listings; print(search_listings('graphic tee', max_price=30))"
-
+[{'id': 'lst_002', 'title': 'Y2K Baby Tee — Butterfly Print', 'description': 'Super cute early 2000s baby tee with butterfly graphic. Fitted crop length. Tag says medium but fits like a small.', 'category': 'tops', 'style_tags': ['y2k', 'vintage', 'graphic tee', 'cottagecore'], 'size': 'S/M', 'condition': 'excellent', 'price': 18.0, 'colors': ['white', 'pink', 'purple'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_006', 'title': 'Graphic Tee — 2003 Tour Bootleg Style', 'description': 'Vintage-style bootleg tee with faded graphic. Slightly boxy fit. 100% cotton, soft and worn-in.', 'category': 'tops', 'style_tags': ['graphic tee', 'vintage', 'grunge', 'streetwear', 'band tee'], 'size': 'L', 'condition': 'good', 'price': 24.0, 'colors': ['black'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_017', 'title': 'Mesh Long-Sleeve Top — Black', 'description': 'Sheer black mesh long-sleeve. Great for layering under a graphic tee or over a bralette. Stretchy material, fits true to size.', 'category': 'tops', 'style_tags': ['y2k', 'grunge', 'goth', 'layering'], 'size': 'S/M', 'condition': 'excellent', 'price': 15.0, 'colors': ['black'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_033', 'title': 'Vintage Band Tee — Faded Grey', 'description': 'Faded grey band-style tee with distressed graphic. Crew neck. Fits boxy. Well-loved but no holes or major damage.', 'category': 'tops', 'style_tags': ['vintage', 'grunge', 'band tee', 'graphic tee', 'streetwear'], 'size': 'L', 'condition': 'fair', 'price': 19.0, 'colors': ['grey', 'charcoal'], 'brand': None, 'platform': 'depop'}, {'id': 'lst_011', 'title': 'Low-Rise Cargo Pants — Khaki', 'description': 'Y2K era low-rise cargo pants. Lots of pockets. Khaki color, slightly distressed at the hems. Great for layering with a long tee.', 'category': 'bottoms', 'style_tags': ['y2k', 'cargo', '2000s', 'streetwear'], 'size': 'W29', 'condition': 'fair', 'price': 27.0, 'colors': ['khaki', 'tan'], 'brand': None, 'platform': 'poshmark'}, {'id': 'lst_015', 'title': 'Vintage Graphic Hoodie — Faded Black', 'description': 'Faded black pullover hoodie with barely-visible vintage graphic on the chest. Cozy interior. Some pilling but adds to the worn-in look.', 'category': 'tops', 'style_tags': ['vintage', 'grunge', 'graphic', 'streetwear'], 'size': 'L', 'condition': 'fair', 'price': 26.0, 'colors': ['black', 'charcoal'], 'brand': None, 'platform': 'depop'}]
 ```
 
 ```
-$ python -c "from tools import suggest_outfit; ..."
+$ python -c "from tools import search_listings; print(search_listings('designer ballgown', size='XXS', max_price=5))"
+[]
+```
 
+`suggest_outfit`, with the example wardrobe, then with an empty wardrobe:
+
+```
+$ python -c "from tools import suggest_outfit; from utils.data_loader import get_example_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_example_wardrobe()))"
+**Outfit 1: Casual & Classic**
+Pair the Vintage Levi's with the **white ribbed tank top** tucked in, the **brown leather belt**, and **chunky white sneakers**. Layer the **vintage black denim jacket** on top for a cool, effortless finish. 
+
+**Outfit 2: Cozy Streetwear**
+Style the jeans with the **oversized grey crewneck sweatshirt** half-tucked, finished off with **black combat boots** and the **black crossbody bag** for an easy, everyday look.
 ```
 
 ```
-$ python -c "from tools import create_fit_card; ..."
+$ python -c "from tools import suggest_outfit; from utils.data_loader import get_empty_wardrobe, load_listings; print(suggest_outfit(load_listings()[0], get_empty_wardrobe()))"
+**1. The Classic Casual:** Pair them with a tucked-in plain white t-shirt, a leather belt, and white canvas sneakers. 
 
+**2. Elevated Denim:** Dress them up with an oversized black blazer layered over a ribbed tank top, finished with black ankle boots.
+```
+
+`create_fit_card` (run with `AI201_CACHE=0` so the answer is fresh, not cached):
+
+```
+$ AI201_CACHE=0 python -c "from tools import create_fit_card; from utils.data_loader import load_listings; print(create_fit_card('jeans and white sneakers', load_listings()[10]))"
+Obsessed with these new khaki low-rise cargo pants I just scored on Poshmark! They only cost $27, which is an absolute steal for how comfy they are. I can’t wait to style them with denim and crisp white kicks for my next weekend errand run.
 ```
 
 ---

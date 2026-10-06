@@ -162,24 +162,22 @@ Obsessed with these new khaki low-rise cargo pants I just scored on Poshmark! Th
 
 ## How I Used AI
 
-<!-- Two specific moments. What you asked, what came back, what you changed.
+I used Claude mostly as a tutor to simplify the existing code and milestone expectations.
 
-     "I used Claude to help me code" is not enough.
-
-     "I gave Claude my search_listings spec. It returned None on no match
-     instead of an empty list, so I changed it" is the level we want. -->
+Claude explained each milestone section to me, and I built the tools and the loop from those explanations. Then I asked Claude to attack my work and explain why something did not look right.
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked Claude to check my `create_fit_card` tool and test it on several items, including one test with the cache turned off.
+- *What came back:* Some of the captions included incorrect information. For example, one caption said "$12 on Depop" even though the item cost $27 and was listed on Poshmark. Another caption incorrectly mentioned Vinted. My prompt did not include the item's price or platform, so the model filled in the missing details by guessing.
+- *What I changed:* With my approval, Claude added the correct price and platform to the prompt and told the model to summarize the outfit in one phrase and limit the response to two to four sentences. I then tested four items again, and all four captions matched the actual data.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked Claude to run my agent and verify that the sample commands worked before adding them to the README.
+- *What came back:* It found two errors. Running `app.py ask` caused an `UnboundLocalError` because some lines had accidentally been placed outside the `if` block in `run_agent`. Also, running `suggest_outfit` with an empty wardrobe caused a `NameError` because the fit-card prompt had been placed in the wrong function.
+- *What I changed:* With my approval, Claude moved the lines back inside the `if` block and restored the prompt for the empty-wardrobe case. After those changes the commands ran successfully, so I copied the actual output into the README.
+
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 

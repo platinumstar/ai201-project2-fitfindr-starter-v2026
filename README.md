@@ -39,18 +39,12 @@
 
 ## What This Does
 
-<!-- Three or four sentences: what a user asks for, and what they get back. -->
-''
-
-
+FitFindr is a thrift-shopping assistant. A user types a request in plain language, like "vintage graphic tee under $30", and the agent searches a set of 40 secondhand listings, filtering by price and size and ranking by keywords. It picks the best match, asks the model for one or two outfits that use pieces from the user's own wardrobe (or general styling ideas if the wardrobe is empty), and writes a short social-media-style caption for the find. The user gets back the item with its price and platform, the outfit ideas, and the caption. If nothing matches, the agent stops early and tells the user which filters to change.
 
 ---
 
 ## Tool Inventory
-"""
-size='US 9' returns nothing, and One Size returns nothing. A size with a space never equals a single token. If a user types "size US 9", it won't match the shoe. You can leave it, but then say so in your README, or handle multi-word sizes by splitting wanted too and requiring all its pieces.
-One Size items never match M. That follows your whole-token rule, which is fine. Just be aware of it.
-"""
+
 <!-- Four lines per tool. This is worth 2 points and it's the single most
      common place students lose them.
 
@@ -63,7 +57,7 @@ One Size items never match M. That follows your whole-token rule, which is fine.
 
 ### `search_listings`
 
-- **What it does:** Searches the listings data for items matching a description, and optionally a size and a price ceiling. Size matches by whole token, case-insensitively: M matches S/M and M/L but not US 9 or XL.
+- **What it does:** Searches the listings data for items matching a description, and optionally a size and a price ceiling. Size matches by whole token, case-insensitively: M matches S/M and M/L but not US 9 or XL. A size with a space (such as "US 9") never matches, and "One Size" items never match a letter size.
 - **Inputs:** `description` (str), `size` (str or None), `max_price` (float or None, inclusive)
 - **Returns:** A list of listing dicts, best keyword match first, at most `config.SEARCH_RESULT_LIMIT` long. Each dict has `id`, `title`, `description`, `category`, `style_tags` (list), `size`, `condition`, `price` (float), `colors` (list), `brand` (str or None) and `platform`.
 - **When it has nothing:** Returns an empty list `[]`, not `None` and not an exception. The loop branches on this.
@@ -97,16 +91,18 @@ One Size items never match M. That follows your whole-token rule, which is fine.
      The grader checks your code against what you claim here, so the file and
      function have to be real. -->
 
-**Branch rule:** "If search_listings returns an empty list, put a message in the session and stop. Otherwise, take the first result and go to suggest_outfit."
+**Branch rule:** 
+"If search_listings returns an empty list, put a message in the session and stop. Otherwise, take the first result and go to suggest_outfit."
 
-**Where it lives:** `agent.py::run_agent`
+**Where it lives:** 
+`agent.py::run_agent`
 
-**How the query is parsed:** used regular expressions (SIZE_RE, PRICE_RE) to pull out the size and price, then removed those phrases to leave the description. 
+**How the query is parsed:** 
+two regular expressions (SIZE_RE and PRICE_RE) find the size and price, and those phrases are cut out, leaving the description. The price pattern needs a `$` after "under", "below", "up to" or "max", and the size pattern needs the word "size" before the size, so "jeans under 40 dollars" is not parsed for price.
 
-**What moves through the session:** <!-- which fields, in what order -->
-        "description",
-        "size":,
-        "max_price"
+**What moves through the session:** 
+query, parsed, search_results, selected_item, outfit_suggestion, fit_card, and error only if the run stops early.
+
 ---
 
 ## Sample Run
@@ -115,7 +111,8 @@ One Size items never match M. That follows your whole-token rule, which is fine.
 
 ```
 $ python app.py ask 'vintage graphic tee under $30'
-Found:    Y2K Baby Tee — Butterfly Print — $18.0 on depop
+
+  Found:    Y2K Baby Tee — Butterfly Print — $18.0 on depop
   Outfit:   **Outfit 1 (Casual Y2K):** Pair the butterfly baby tee with the **baggy straight-leg jeans**, **brown leather belt**, and **chunky white sneakers**. Throw on the **black cropped zip hoodie** for a layered look.
 **Outfit 2 (Contrast Mix):** Style the pink/purple butterfly tee with the **wide-leg khaki trousers** and **chunky white sneakers**, topped with the **vintage black denim jacket** to ground the pastel tones.
   Fit card: Just scored this absolute dream of a Y2K baby tee on Depop for only $18! I can't wait to style the butterfly print with some baggy denim and a cute zip-up hoodie for the ultimate throwback fit.

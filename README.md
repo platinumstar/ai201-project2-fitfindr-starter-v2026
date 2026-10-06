@@ -39,7 +39,7 @@
 
 ## What This Does
 
-FitFindr is a thrift-shopping assistant. A user types a request in plain language, like "vintage graphic tee under $30", and the agent searches a set of 40 secondhand listings, filtering by price and size and ranking by keywords. It picks the best match, asks the model for one or two outfits that use pieces from the user's own wardrobe (or general styling ideas if the wardrobe is empty), and writes a short social-media-style caption for the find. The user gets back the item with its price and platform, the outfit ideas, and the caption. If nothing matches, the agent stops early and tells the user which filters to change.
+FitFindr is a thrift-shopping assistant. A user types a request in plain language, like "vintage graphic tee under $30", and the agent searches a set of 40 secondhand listings, filtering by price and size and ranking by keywords. It picks the best match, asks the model for one or two outfits that use pieces from the user's own wardrobe (or general styling ideas if the wardrobe is empty), and writes a short social-media-style caption for the find. The user gets back the item with its price and platform, the outfit ideas, and the caption, or, if nothing matches, a message saying which filters to change.
 
 ---
 

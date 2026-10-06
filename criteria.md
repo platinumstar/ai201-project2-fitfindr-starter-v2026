@@ -43,7 +43,7 @@ I picked 5 of 5 because this path never calls the model. When search returns an 
 
 ## 3. Something about state
 
-In 5 of 5 tries, the id of session["selected_item"] matches the id of the new_item that suggest_outfit received, as shown in the trace.
+In 5 of 5 runs of "looking for a vintage graphic tee under $30", the `id` of `session["selected_item"]` equals the `id` of `session["search_results"][0]`, and equals the `id` of the `new_item` that `suggest_outfit` received. A reader can check this by printing those three ids after the run.
 
 **Why this target:**
 

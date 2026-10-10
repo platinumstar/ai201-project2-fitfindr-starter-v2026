@@ -76,10 +76,11 @@ def search_listings(
     max_price: float | None = None,
 ) -> list[dict]:
     """
-    This tool finds listing  when there is a description(str) (required). 
-    a size string to filter by, or None to skip size. Size are in letters s, m, l , xl .
-    Use Max price (None to skip price) in dollars  to set the upper limit on the range of the returned listing , 
-    filter by max price. It returns a list of listing dictionaries
+    Searches 40 secondhand clothing listings by keywords. `description` (required text,
+    e.g. "vintage graphic tee") is case-insensitive; optional `size` is one size word such
+    as "M" or "XL" (so "M" matches "S/M", but "small" and "US 9" match nothing); optional
+    `max_price` is a number in dollars, inclusive. Returns up to 10 listing dictionaries
+    (id, title, price, size, platform and more), best match first, or [] if nothing matches.
     """
     return _search_listings_impl(description, size, max_price)
 

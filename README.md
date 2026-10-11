@@ -248,34 +248,49 @@ that produced it:
 
 ## Loop Trace
 
-<!-- One full run, printed step by step, with the MCP call visible in it.
-
-     `python app.py ask '...' --trace` once you've added the trace.step()
-     calls in Milestone 2.
-
-     Worth pasting BOTH the happy path and the empty-search path. The empty
-     one should be visibly shorter, because it stops. If your two traces are
-     the same length, your branch isn't working — and this is the fastest way
-     anyone will ever find that out. -->
-
 **Happy path**
 
 ```
-
+$ python app.py ask 'vintage graphic tee under $30' --trace
+[1] parse query
+      in:  vintage graphic tee under $30
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 10 items: Y2K Baby Tee — Butterfly Print, Graphic Tee — 2003 Tour Bootleg Style, Vintage Band Tee — Faded Grey … +7 more
+[3] branch
+      →    results found: continuing
+[4] suggest_outfit
+      in:  Y2K Baby Tee — Butterfly Print ($18.0, depop)
+      out: **Outfit 1 (Casual Y2K):** Pair the butterfly baby tee with the **baggy straight-leg jeans**, **brown leather …
+[5] create_fit_card
+      in:  **Outfit 1 (Casual Y2K):** Pair the butterfly baby tee with the **baggy straight-leg jeans**, **brown leather …
+      out: Just scored this absolute dream of a Y2K baby tee on Depop for only $18! I can't wait to style the butterfly p…
 ```
 
 **Empty search**
 
 ```
-
+$ python app.py ask 'designer ballgown size XXS under $5' --trace
+[1] parse query
+      in:  designer ballgown size XXS under $5
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+[3] branch
+      →    no results: stopping
 ```
 
-**On the MCP move:** <!-- what changed in your code, and whether anything
-behaved differently afterwards. If the rewire didn't work, say exactly where it
-broke — the error text and the last thing that worked. That earns the point in
-full. -->
+The empty-search trace stops at step 3, so it is shorter than the happy path: `suggest_outfit` and `create_fit_card` are never called.
 
+**The three failures, triggered one at a time**
 
+- *Empty search:* No listings matched "designer ballgown". You could raise your price limit (you searched under $5), or try a different size (you searched size XXS), or use simpler or different keywords.
+- *Empty wardrobe* (`python app.py ask 'vintage graphic tee under $30' --empty-wardrobe`): no crash and no empty string. `suggest_outfit` returned two looks built from general basics, and `create_fit_card` still produced a caption.
+- *Model unavailable* (a fake key for one run, on a query not already cached): the trace ends at step 4, `model unavailable`, and the agent says: "I found a match, but couldn't reach the AI model to write the outfit. The model rejected your API key. Check GEMINI_API_KEY in your .env file, or create a fresh key at aistudio.google.com. Once that is fixed, run your search again."
+
+**On the MCP move:** I moved `search_listings` onto MCP. In `mcp_server.py` it is registered with `@mcp.tool()`, typed inputs and a description, and `python mcp_client.py` lists it. In `run_agent()` I replaced the direct call with `call_tool("search_listings", {...})`, passing the same three values from `session["parsed"]`. Nothing behaved differently afterwards: the list returned over MCP equals the list from the direct call, `brand: None` values survive, and an empty search still returns `[]`, so the branch still works.
 
 ---
 

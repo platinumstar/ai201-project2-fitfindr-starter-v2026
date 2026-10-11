@@ -139,6 +139,7 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         "size": size,
         "max_price": max_price,
     }
+    trace.step("parse query", inputs=query, returned=session["parsed"])
     
     count += 1
     trace.check_iterations(count)
@@ -147,8 +148,10 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     "size": session["parsed"]["size"],
     "max_price": session["parsed"]["max_price"],
     })
+    trace.step("search_listings (via MCP)", inputs=session["parsed"], returned=session["search_results"])
 
     if not session["search_results"]:
+        trace.step("branch", note="no results: stopping")
         parsed = session["parsed"]
         description = parsed["description"]
         max_price = parsed["max_price"]
@@ -174,16 +177,25 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         )
         return session
 
+    trace.step("branch", note="results found: continuing") 
     session["selected_item"] = session["search_results"][0]
-    
-    count += 1
-    trace.check_iterations(count)
-    session["outfit_suggestion"] = suggest_outfit(session["selected_item"], session["wardrobe"])
 
-    count += 1
-    trace.check_iterations(count)
-    session["fit_card"] = create_fit_card(session["outfit_suggestion"], session["selected_item"])
+    try:
+        count += 1
+        trace.check_iterations(count)
+        session["outfit_suggestion"] = suggest_outfit(session["selected_item"], session["wardrobe"])
+        trace.step("suggest_outfit", inputs=session["selected_item"], returned=session["outfit_suggestion"])
 
+        count += 1
+        trace.check_iterations(count)
+        session["fit_card"] = create_fit_card(session["outfit_suggestion"], session["selected_item"])
+        trace.step("create_fit_card", inputs=session["outfit_suggestion"], returned=session["fit_card"])
+    except ModelUnavailable as exc:
+        trace.step("model unavailable", note=str(exc)[:80])
+        session["error"] = (
+            "I found a match, but couldn't reach the AI model to write the outfit. "
+            f"{exc} Once that is fixed, run your search again."
+        )
     return session
 
 

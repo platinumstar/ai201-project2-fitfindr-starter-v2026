@@ -134,8 +134,11 @@ def write_report(rows, args):
         "- Loop: `agent.py::run_agent` · tools: `tools.py`",
         f"- Tries per scenario: {n}, caching off",
         f"- Temperature: {config.TEMPERATURE}",
+        f"- Retry policy: 503/overload and rate-limit errors retried up to "
+        f"{config.MAX_RETRIES}x with backoff (generate.py::generate)",
         f"- When: {dt.datetime.now().strftime('%Y-%m-%d %H:%M')}",
         "",
+
         "Paste the table below into your README. Fill in the Criterion and",
         "Target columns from `criteria.md`, then mark each try PASS or FAIL",
         "from the output underneath and count them for the Verdict.",

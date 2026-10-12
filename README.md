@@ -295,15 +295,23 @@ date nights.
 
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| 1 | Full three-tool run returns a fit card | 4 of 5 | MET (5/5) | Counted PASS across the 5 tries in `results/run_2026-10-12_1205_before.md`; a non-empty fit card came back every time. |
+| 2 | Empty search stops before tool 2 | 5 of 5 | MET (5/5) | Checked `stopped early` and the message on all 5 tries; the loop stopped before `suggest_outfit` every time. |
+| 3 | Item in session matches item passed on | 5 of 5 | MET (5/5) | Compared `selected_item`, `search_results[0]`, and the id passed to `suggest_outfit` across all 5 tries; all three ids matched every time. |
+| 4 | Fit card mentions the item's price | 5 of 5 | MET (5/5) | Checked each of the 3 captions per try for the price, the platform name, a 2-4 sentence count, and non-identical wording; all 15 captions passed. |
+| 5 | Over-budget query returns nothing over the limit | 4 of 5 | MET (5/5) | Ran with `get_empty_wardrobe()`; checked for no exception and a non-empty fit card across all 5 tries. |
+
 
 **Diagnoses**
 
-
+No criterion missed its target, so there's no mechanism to trace. But a clean
+run isn't the same as a hard test: criteria 1, 3, and 4 all ran their 5 tries
+against the exact same item (`lst_002`), not 5 different items. If I tightened
+one target, it would be criterion 4 — instead of "5 of 5 tries on one item," I'd
+rewrite it as "5 of 5 tries across 5 different items," since that version would
+actually catch a prompt that silently depends on a field this item happens to
+have (like a present `brand`), the way the Moment 1 bug in "How I Used AI" did
+before I fixed it.
 
 ---
 

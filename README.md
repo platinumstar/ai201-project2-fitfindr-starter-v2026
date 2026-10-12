@@ -199,17 +199,73 @@ Claude explained each milestone section to me, and I built the tools and the loo
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. Full three-tool run returns a fit card | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 2. Empty search stops before tool 2 | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. Item in session matches item passed on | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. Fit card mentions the item's price | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. Over-budget query returns nothing over the limit | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Real output from one try**, pasted as text, naming the file and function
+Full evidence for all 25 tries: [`results/run_2026-10-12_1205_before.md`](results/run_2026-10-12_1205_before.md).
+
+**Real output for each criterion, one try**, naming the file and function
 that produced it:
 
+**Criterion 1 — `agent.py::run_agent`, query `"vintage graphic tee under $30"`, try 1**
+
+```
+- selected_item: Y2K Baby Tee — Butterfly Print ($18.0, depop)
+- ids: selected_item=lst_002 · search_results[0]=lst_002 · suggest_outfit received=lst_002
+
+Fit card:
+Obsessed with this little butterfly tee I just scored! It's giving major 2000s energy and I can't wait to style it with baggy denim or contrast it with some edgy trousers. Grabbed it for $18 on depop and it's easily my new favorite piece in the rotation.
 ```
 
+**Criterion 2 — `agent.py::run_agent`, query `"designer ballgown size XXS under $5"`, try 1**
+
+```
+- stopped early: yes — No listings matched "designer ballgown". You could raise your price
+  limit (you searched under $5), or try a different size (you searched size XXS), or use
+  simpler or different keywords.
+- selected_item: (none)
+- ids: selected_item=None · search_results[0]=None · suggest_outfit received=None
+```
+
+**Criterion 3 — `agent.py::run_agent`, query `"looking for a vintage graphic tee under $30"`, try 1**
+
+```
+- ids: selected_item=lst_002 · search_results[0]=lst_002 · suggest_outfit received=lst_002
+```
+
+**Criterion 4 — `tools.py::create_fit_card`, same item, try 1, three repeat runs**
+
+```
+Run 1: Obsessed with this butterfly print baby tee I just scored on depop for only $18! It's
+giving major Y2K nostalgia and is so easy to style for either a baggy denim street look or
+tailored trousers with combat boots. Size S/M fits like a dream, so grab it before I change my
+mind and keep it for myself!
+
+Run 2: Just scored this precious butterfly tee and I am obsessed with the nostalgic colorway!
+It's up on my Depop right now for only $18 in a size S/M. I'm totally planning to throw it on
+with some relaxed denim and a dark jacket for effortless off-duty vibes, or dress it up with
+utility trousers and rugged boots. Run, don't walk, because you guys know these early 2000s
+gems never stay in my shop long!
+
+Run 3: Obsessed with this little butterfly tee I just scored for only $18 on depop! It's giving
+total early 2000s pop star energy, and I honestly can't wait to style it. I'm thinking about
+either throwing on some baggy denim and chunky kicks for an effortless daytime look, or layering
+it under a cropped hoodie with trousers for something a bit more edgy.
+```
+
+**Criterion 5 — `agent.py::run_agent`, `get_empty_wardrobe()`, query `"denim jacket under $50"`, try 1**
+
+```
+- selected_item: Denim Jacket — Light Wash, Cropped ($42.0, poshmark)
+- ids: selected_item=lst_007 · search_results[0]=lst_007 · suggest_outfit received=lst_007
+
+Fit card:
+Score of the century secured on Poshmark for just $42! I am so obsessed with this light wash
+cropped denim jacket and can't wait to style it for everything from running errands to casual
+date nights.
 ```
 
 ---

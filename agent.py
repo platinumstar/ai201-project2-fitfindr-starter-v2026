@@ -183,6 +183,7 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     try:
         count += 1
         trace.check_iterations(count)
+        session["outfit_item_id"] = session["selected_item"].get("id")  # id suggest_outfit receives
         session["outfit_suggestion"] = suggest_outfit(session["selected_item"], session["wardrobe"])
         trace.step("suggest_outfit", inputs=session["selected_item"], returned=session["outfit_suggestion"])
 

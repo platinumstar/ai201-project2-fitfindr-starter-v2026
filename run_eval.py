@@ -95,18 +95,21 @@ def main():
 
         tries = []
         for attempt in range(1, args.tries + 1):
-            record = run_once(scenario)
-            tries.append(record)
+            # A try is `repeats` runs of the same scenario (default 1).
+            runs = [run_once(scenario) for _ in range(scenario.get("repeats", 1))]
+            tries.append(runs)
 
-            if record["crashed"]:
-                print(f"  try {attempt}: CRASHED — {record['crashed']}")
-            else:
-                session = record["session"] or {}
-                if session.get("error"):
-                    print(f"  try {attempt}: stopped early — {str(session['error'])[:60]}")
+            for r, record in enumerate(runs, 1):
+                tag = f"try {attempt}" + (f" run {r}/{len(runs)}" if len(runs) > 1 else "")
+                if record["crashed"]:
+                    print(f"  {tag}: CRASHED — {record['crashed']}")
                 else:
-                    card = (session.get("fit_card") or "")
-                    print(f"  try {attempt}: completed — fit card {len(card)} chars")
+                    session = record["session"] or {}
+                    if session.get("error"):
+                        print(f"  {tag}: stopped early — {str(session['error'])[:60]}")
+                    else:
+                        card = (session.get("fit_card") or "")
+                        print(f"  {tag}: completed — fit card {len(card)} chars")
 
         rows.append({"scenario": scenario, "tries": tries})
         print()
@@ -176,30 +179,38 @@ def write_report(rows, args):
                   f"- Query: `{scenario['query']}`",
                   f"- Wardrobe: {scenario['wardrobe']}", ""]
 
-        for i, record in enumerate(row["tries"], 1):
+        for i, runs in enumerate(row["tries"], 1):
             lines.append(f"**Try {i}**")
             lines.append("")
 
-            if record["crashed"]:
-                lines += ["Crashed:", "", "```", record["crashed"], "```", ""]
-                continue
+            for r, record in enumerate(runs, 1):
+                if len(runs) > 1:
+                    lines += [f"_Run {r}/{len(runs)}_", ""]
 
-            session = record["session"] or {}
-            item = session.get("selected_item") or {}
-            lines += [
-                f"- stopped early: {'yes — ' + str(session.get('error')) if session.get('error') else 'no'}",
-                f"- selected_item: {item.get('title', '(none)')}"
-                + (f" (${item.get('price')}, {item.get('platform')})" if item else ""),
-                f"- search_results: {len(session.get('search_results') or [])}",
-                "",
-            ]
-            if session.get("outfit_suggestion"):
-                lines += ["Outfit suggestion:", "", "```",
-                          str(session["outfit_suggestion"]), "```", ""]
-            if session.get("fit_card"):
-                lines += ["Fit card:", "", "```", str(session["fit_card"]), "```", ""]
-            if record["trace"]:
-                lines += ["Trace:", "", "```", record["trace"], "```", ""]
+                if record["crashed"]:
+                    lines += ["Crashed:", "", "```", record["crashed"], "```", ""]
+                    continue
+
+                session = record["session"] or {}
+                item = session.get("selected_item") or {}
+                results = session.get("search_results") or []
+                lines += [
+                    f"- stopped early: {'yes — ' + str(session.get('error')) if session.get('error') else 'no'}",
+                    f"- selected_item: {item.get('title', '(none)')}"
+                    + (f" (${item.get('price')}, {item.get('platform')})" if item else ""),
+                    f"- search_results: {len(results)}",
+                    f"- ids: selected_item={item.get('id')} · "
+                    f"search_results[0]={results[0].get('id') if results else None} · "
+                    f"suggest_outfit received={session.get('outfit_item_id')}",
+                    "",
+                ]
+                if session.get("outfit_suggestion"):
+                    lines += ["Outfit suggestion:", "", "```",
+                              str(session["outfit_suggestion"]), "```", ""]
+                if session.get("fit_card"):
+                    lines += ["Fit card:", "", "```", str(session["fit_card"]), "```", ""]
+                if record["trace"]:
+                    lines += ["Trace:", "", "```", record["trace"], "```", ""]
 
     path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -209,7 +220,7 @@ def write_report(rows, args):
     print(generate.usage())
     print("\nCommit this file. It's the evidence the test actually happened.")
 
-    if not any(r["tries"][0]["trace"] for r in rows):
+    if not any(r["tries"][0][0]["trace"] for r in rows):
         print(
             "\nNote: no trace was captured. You haven't added trace.step() calls\n"
             "to run_agent() yet — that's Milestone 2, and the trace is required\n"

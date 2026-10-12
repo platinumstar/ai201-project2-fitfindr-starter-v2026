@@ -178,6 +178,11 @@ Claude explained each milestone section to me, and I built the tools and the loo
 - *What came back:* It found two errors. Running `app.py ask` caused an `UnboundLocalError` because some lines had accidentally been placed outside the `if` block in `run_agent`. Also, running `suggest_outfit` with an empty wardrobe caused a `NameError` because the fit-card prompt had been placed in the wrong function.
 - *What I changed:* With my approval, Claude moved the lines back inside the `if` block and restored the prompt for the empty-wardrobe case. After those changes the commands ran successfully, so I copied the actual output into the README.
 
+**Moment 3**
+
+- *What I asked for:* I had Claude argue against my own MET verdict on criterion 4, since my captions said "$18" but the criterion literally said "18.0."
+- *What came back:* Claude pointed out that strictly reading my own wording, none of my captions matched, which would flip it to MISSED.
+- *What I changed:* I kept it as MET — the criterion was really checking that a reader can see the price, not an exact string, so I didn't touch the prompt.
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
@@ -407,8 +412,6 @@ identical code.
 <!-- If it made things worse, say that. Honestly reported, that earns full
      credit and is more interesting than one that worked. -->
 
-
-
 ---
 
 ## What's Still Broken
@@ -417,7 +420,17 @@ identical code.
      you did. "I ran out of time" is fine if it's true. Pretending nothing is
      left is not. -->
 
-
+All five criteria read MET, but criteria 1, 3, and 4 only ever ran against
+one item (`lst_002`, the Y2K Baby Tee) across all 5 tries. A clean 5/5 on
+the same item each time is weaker evidence than 5/5 across 5 different
+items — it proves the loop and the prompt work for *this* item's shape
+(it has a brand-less field, a short description, a round price), but not
+that they hold up for an item with, say, a missing `brand` or a price with
+cents. I'd rewrite the criterion 1, 3, and 4 scenarios in `scenarios.py` to
+cycle through a handful of different items instead of repeating the same
+query, and re-run. I stopped here because the current run log already
+satisfies this unit's requirement, and reworking the scenarios would mean
+another full before/after cycle I didn't have time left for this unit.
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
